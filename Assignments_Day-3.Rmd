@@ -1,0 +1,251 @@
+---
+title: "Assignment:Day 3"
+author: "Kanhu"
+date: "27/11/2019"
+output:
+  pdf_document: default
+---
+
+
+
+## 1. Useful functions
+a. Search about `abline()` function
+b. Search about `range()` function
+
+```{r eval=F}
+?abline()
+?range()
+```
+
+## 2. User defined functions
+a. Write a function that accepts a DNA string and returns % of A, T, G and C as a named vector. (**Hint:** use `strsplit` function to get each character; )
+b. Update that function to accept an argument `plot` which will decide if user want to plot a pie chart of each nucleotide perentages. 
+c. Further update the function to estimate and return number of non-nucleotide characters in the input DNA string. Give a warning if there is >50% of non-nucleotide sequecens. (**Hint:** use `%in% opertor to find ATGC characters`)
+
+```{r}
+# a. Write a function that accepts a DNA string and returns % of A, T, G and C as a named vector. (**Hint:** use `strsplit` function to get each character; )
+
+nucleotide_count <- function(dna){
+  ## Integer Vector to store counts
+  counts <- c(0,0,0,0)
+  names(counts) <- c('A','T','G','C')
+  
+  ## Split the string to a vector. ?strsplit to know more
+  dna_vec <- strsplit(x=dna, split="")[[1]]
+  
+  ## Length of subsetted vector is the count, 
+  ### also try table(dna_vec)
+  counts['A'] <- length(dna_vec[dna_vec=='A'])
+  counts['T'] <- length(dna_vec[dna_vec=='T'])
+  counts['G'] <- length(dna_vec[dna_vec=='G'])
+  counts['C'] <- length(dna_vec[dna_vec=='C'])
+  
+  ## Percentage calculation
+  ## Numeric Vector to store percentages
+  perc <- c(0.0, 0.0, 0.0 ,0.0)
+  names(perc) <- names(counts)  ## similar names 
+  perc <- 100 * counts/sum(counts)
+  
+  ## return the perc vector 
+  return(perc)
+}
+
+## Use the function `nucleotide_count()` 
+nucleotide_count('ATGC')
+nucleotide_count('ATTGCCCC')
+#-----------------------------------------------------
+
+# b. Update that function to accept an argument `plot` which will decide if user want to plot a pie chart of each nucleotide perentages. 
+
+## Add the argument plot with deafult FALSE value
+nucleotide_count <- function(dna, plot=FALSE){
+  counts <- c(0,0,0,0)
+  names(counts) <- c('A','T','G','C')
+  
+  ## Split the string to a vector. ?strsplit to know more
+  dna_vec <- strsplit(x=dna, split="")[[1]]
+  ## Length of subsetted vector is the count, 
+  ### also try table(dna_vec)
+  counts['A'] <- length(dna_vec[dna_vec=='A'])
+  counts['T'] <- length(dna_vec[dna_vec=='T'])
+  counts['G'] <- length(dna_vec[dna_vec=='G'])
+  counts['C'] <- length(dna_vec[dna_vec=='C'])
+  
+  ## Percentage calculation
+  ## Numeric Vector to store percentages
+  perc <- c(0.0, 0.0, 0.0 ,0.0)
+  names(perc) <- names(counts)  ## similar names 
+  perc <- 100 * counts/sum(counts)
+  
+  ## Check if user specified plot as TRUE
+  if(plot == TRUE){
+    pie(perc)
+    #barplot(height = perc, names.arg = names(perc), col=1:4)
+  }
+  
+  ## return the count vector 
+  return(perc)
+}
+
+### Use the function
+nucleotide_count('ATGC')
+nucleotide_count('ATTGCCCC', plot=TRUE)
+#-----------------------------------------------------
+
+# c. Further update the function to estimate and return number of non-nucleotide characters in the input DNA string. Give a warning if there is >50% of non-nucleotide sequecens. (**Hint:** use `%in% opertor to find ATGC characters`)
+
+nucleotide_count <- function(dna, plot=FALSE){
+  counts <- c(0,0,0,0,0)
+  names(counts) <- c('A','T','G','C','N')
+  
+  ## Split the string to a vector. ?strsplit to know more
+  dna_vec <- strsplit(x=dna, split="")[[1]]
+  ## Length of subsetted vector is the count, 
+  ### also try table(dna_vec)
+  counts['A'] <- length(dna_vec[dna_vec=='A'])
+  counts['T'] <- length(dna_vec[dna_vec=='T'])
+  counts['G'] <- length(dna_vec[dna_vec=='G'])
+  counts['C'] <- length(dna_vec[dna_vec=='C'])
+  counts['N'] <- length(dna_vec) - sum(counts[c('A','T','G','C')])
+  
+  ## Percentage calculation
+  ## Numeric Vector to store percentages
+  perc <- c(0.0, 0.0, 0.0 ,0.0, 0.0)
+  names(perc) <- names(counts)  ## similar names 
+  perc <- 100 * counts/sum(counts)
+  
+  ## Check if user specified plot as TRUE
+  if(plot == TRUE){
+    pie(perc)
+    #barplot(height = perc, names.arg = names(perc), col=1:4)
+  }
+  
+  if(perc['N'] >50){
+    print('% of N is >50% \n')
+  }
+  ## return the count vector 
+  return(perc)
+}
+
+### Use the function
+nucleotide_count('ATTGCCCC', plot=TRUE)
+nucleotide_count('ATTGCCCCNN', plot=TRUE)
+nucleotide_count('ATTNNNNNNNNN', plot=TRUE)
+#-----------------------------------------------------
+```
+
+## 3. User defined functions
+a. Import BLAST_hitTable.csv file in to a dataframe `BLAST`.
+b. Rename the column headings (see Data/ReadMe.txt file )
+c. Filter those hits with e-value < 1e-10 and store in a variable named `BLAST2`. Report the number of hits obtained after this filter. 
+d. Sort the `BLAST2` DF on percentage identity column (decreasing order)
+e. Write a function `blast_nr_hit()` that accepts a blast tablular output as a dataframe, and returns a table with best hits. The query id column should be unique. (**Hint**: Use step c and d codes to create sorted BLAST table.Create a new DF using the top hit from the sorted BLAST table. Use for loop to iterate over sorted BLAST table and check if the query_id exists in the new DF, otherwise concatenate with the new DF. )
+
+```{r}
+# a. Import BLAST_hitTable.csv file in to a dataframe `BLAST`.
+BLAST <- read.csv('Data/BLAST_hitTable.csv', header=F)
+
+# b. Rename the column headings (see Data/ReadMe.txt file )
+names(BLAST) <- c('qid','sid','pident','length',
+'mismatch','gapopen', 'q.st','q.en',
+'s.st','s.en', 'evalue','bitscore')
+
+# c. Filter those hits with e-value < 1e-10 and store in a variable named `BLAST2`. Report the number of hits obtained after this filter. 
+BLAST2 <- BLAST[BLAST$evalue<1e-10, ]
+nrow(BLAST2)
+
+# d. Sort the `BLAST2` DF on percentage identity column (decreasing order)
+BLAST2 <- BLAST2[order(BLAST2$pident, decreasing = TRUE), ]
+
+# e. Write a function `blast_nr_hit()` that accepts a blast tablular output as a dataframe, and returns a table with best hits. The query id column should be unique. (**Hint**: Use step c and d codes to create sorted BLAST table.Create a new DF using the top hit from the sorted BLAST table. Use for loop to iterate over sorted BLAST table and check if the query_id exists in the new DF, otherwise concatenate with the new DF. )
+
+blast_nr_hit <- function(blast_tabular){
+  
+  ## Filter hits with evalue < 1e-10
+  blast_tabular <- blast_tabular[blast_tabular[,11]<1e-10, ]
+  ## keep the highly similar hits first 
+  blast_tabular <- blast_tabular[order(blast_tabular[,3], decreasing = TRUE), ]
+  
+  ## New data frame of same dimension and data frame
+  blast_tabular_nr <- blast_tabular[0, ]
+  
+  for(line_count in 1:nrow(blast_tabular)){
+    if(nrow(blast_tabular_nr)>1 && 
+       nrow(
+         blast_tabular_nr[
+           as.vector(blast_tabular_nr[,1]) == as.vector(blast_tabular[line_count, 1]), ]
+         ) >0 ) {
+      ## if the query id exists in first column of blast_tabular_nr,
+      ## then go to next cycle of loop 
+      next
+    }else{
+      ## row bind with the existing df `blast_tabular_nr`
+      blast_tabular_nr <- rbind(blast_tabular_nr,blast_tabular[line_count, ] )
+    }
+  }
+  ## export the non-redundant top hits 
+  return(blast_tabular_nr)
+}
+
+dim(blast_nr_hit(BLAST2))
+head(blast_nr_hit(BLAST2))
+```
+
+## 4. Table merging
+Import Ath_RNAseq.final.csv in to a dataframe `exprs`
+Import Gene_desc_summary.csv in to a dataframe `descript`
+a. Use function `merge()` to merge these two tables using Gene_id column.
+
+```{r}
+exprs <- read.csv('Data/Ath_RNAseq.final.csv') 
+descript <- read.csv('Data/Gene_desc_summary.csv')
+
+## Common column name ID 
+merged_table <- merge(exprs, descript, by='ID')
+head(merged_table)
+write.csv(merged_table, file='Merged_gene_descript.csv')
+```
+
+
+## 5. ggplot2
+
+a. Use `iris` dataset to create a scatter plot between `Petal.Length` and `Petal.Width`. Use Species names to color data points. 
+b. Search about `geom_boxplot()`. Using `ìris`  create box-whishers  plot comparing  `Sepal.Length`, `Sepal.Width`, `Petal.Length`  and `Petal.Width` in the three species. Each species should get separate color. (**Hint**: Use `melt()` from `reshape2` package to create long foramt table)
+c. Use Ath_RNAseq.final.csv expression data. Use ggplot to create a heatmap. 
+
+```{r}
+## Import library 
+library('ggplot2')
+
+# a. Use `iris` dataset to create a scatter plot between `Petal.Length` and `Petal.Width`. Use Species names to color data points. 
+
+p <- ggplot(data=iris, aes(x=Petal.Length, y=Petal.Width, fill=Species))+
+  geom_point()
+
+# b. Search about `geom_boxplot()`. Using `ìris`  create box-whishers  plot comparing  `Sepal.Length`, `Sepal.Width`, `Petal.Length`  and `Petal.Width` in the three species. Each species should get separate color. (**Hint**: Use `melt()` from `reshape2` package to create long foramt table)
+ library(reshape2)
+data <- melt(iris)
+names(data) <- c('Species','Observations','Values')
+
+p <- ggplot(data=data, aes(x=Observations, y=Values, fill=Species))+
+  geom_boxplot()
+p
+# c. Use Ath_RNAseq.final.csv expression data. Use ggplot to create a heatmap. 
+exprs <- read.csv('Data/Ath_RNAseq.final.csv')
+data <- melt(exprs)
+names(data) <- c('GeneID','Sample','TPM')
+
+p <- ggplot(data=data, aes(x=Sample, y=GeneID, fill=TPM))+
+  geom_tile()+
+  scale_fill_gradient(low = "#fee8c8", high = "#e34a33")+
+  theme(axis.text.y = element_text(size=4),
+        axis.text.x = element_text(size=5, angle=45, hjust=1))
+p
+```
+
+
+
+```{r out.width='100px', echo=F}
+knitr::include_graphics('Figures/nebbio_logo.png')
+```
+

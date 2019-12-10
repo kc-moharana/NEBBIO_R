@@ -1,0 +1,207 @@
+---
+title: "Assignment:Day 2"
+author: "Kanhu"
+date: "26/11/2019"
+output:
+  pdf_document: default
+---
+
+## 1. Common functions
+a. Compute the mean and standard deviation (SD) for 1, 1.5, 2, 2.5, 3
+b. Compute mean and SD for 1, 1.5, 2, 2.5, 30
+c. Do you observe any differences.
+d. Use `sample()` to get 20 random integers from a vector of 1..100 integers.
+
+```{r}
+# a. 
+x <- c(1, 1.5, 2, 2.5, 3)
+mean(x)
+sd(x)
+
+# b.
+y <- c(1, 1.5, 2, 2.5, 30)
+mean(y)
+sd(y)
+
+# c.
+# 30 affects the mean value grately. 
+
+# d. 
+sample(1:100, size=20)
+
+```
+
+
+## 2. Base R plots
+Import women.tsv data set in to R.
+a. create a scatter plot using `Height` and `Weight` columns.
+b. Use `table` to calculate number of adult and childs in this table. 
+
+```{r}
+## Set your working direcotry
+dat <- read.csv('Data/women.tsv', sep="\t")
+
+# a. 
+plot(x=dat$Height, y= dat$Height,
+     pch=16, col='blue',
+     xlab=c('Height'), ylab=c("Weight")
+     )
+
+# b. 
+table(dat$Age)
+
+```
+
+## 3. Dataframe sub setting
+Ath_RNAseq.final.csv file contains expression measures of 92 <i>Arabidopsis thaliana</i> genes in 2 tissues (Leaf and Root) treated with ammonia, nitrate and urea.
+
+a. Import this data as a dataframe named `expr`
+b. report the number of rows and columns
+c. Assign the 'ID' column as `row.names` of `expr`
+d. Create a new dataframe `expr_2` containing all columns from `expr` except "ID" column.
+e. Use `expr_2`, Create a boxplot, showing distribution of expression values in each sample. (i.e column wise)
+f. Use `apply()` on `expr_2` to calculate the sum of each row and store to a variable called `expr_rowSum`
+g. Use `apply()` on `expr_2` to calculate the sum of each column and store to a variable called `expr_colSum`
+h. Report the number of genes with total expression level less than 1.
+i. Can you identify the genes which have higher expression in urea treated Leaf than urea treated Root. 
+j. Can you identify the genes which have higher expression in Leaf than Root. Create bar plots of at least 3 such genes. Use mean values as height, and SD to draw the error bar. 
+i. Create a `heatmap` from `expr_2`.
+
+```{r}
+# a. Import this data as a dataframe named `expr`
+expr <- read.csv('Data/Ath_RNAseq.final.csv')
+
+# b. report the number of rows and columns
+dim(expr)
+
+# c. Assign the 'ID' column as `row.names` of `expr`
+row.names(expr) <- expr$ID
+
+# d. Create a new dataframe `expr_2` containing all columns from `expr` except "ID" column.
+expr_2 <- expr[, 2:ncol(expr)]
+
+# e. Use `expr_2`, Create a boxplot, showing distribution of expression values in each sample. (i.e column wise)
+boxplot(expr_2)
+
+# f. Use `apply()` on `expr_2` to calculate the sum of each row and store to a variable called `expr_rowSum`
+expr_rowSum <- apply(expr_2, 1, sum)
+
+
+# g. Use `apply()` on `expr_2` to calculate the sum of each column and store to a variable called `expr_colSum`
+expr_colSum <- apply(expr_2, 2, sum)
+
+# h. Report the number of genes with total expression level less than 1.
+nrow(expr_2[ expr_rowSum<1, ])
+
+# i. Can you identify the genes which have higher expression in urea treated Leaf than urea treated Root. 
+nrow(expr_2[expr_2$Leaf.urea > expr_2$Root.urea,  ])
+
+# j. Can you identify the genes which have higher expression in Leaf than Root. Create bar plots of at least 3 such genes. Use mean values as height, and SD to draw the error bar. 
+
+### Calculating the means for leaf samples only
+avg_leaf_expr <- apply( expr_2[ , c('Leaf.ammonia', 'Leaf.nitrate', 'Leaf.urea')],
+                          1,
+                          mean)
+### Calculating the SDs for leaf samples only
+sd_leaf_expr <- apply( expr_2[ , c('Leaf.ammonia', 'Leaf.nitrate', 'Leaf.urea')],
+                          1,
+                          sd)
+### Calculating the means for Root samples only
+avg_root_expr <- apply( expr_2[ , c('Root.ammonia', 'Root.nitrate', 'Root.urea')],
+                          1,
+                          mean)
+### Calculating the SDs for Root samples only
+sd_root_expr <- apply( expr_2[ , c('Root.ammonia', 'Root.nitrate', 'Root.urea')],
+                          1,
+                          sd)
+### Select genes with higher average expr in Leaf
+selected_genes <- expr_2[ avg_leaf_expr > avg_root_expr,  ]
+dim(selected_genes)
+
+### Randomsly select 3 genes 
+genes <- sample( row.names(selected_genes), size = 3)
+
+## Draw barplot 
+xy <- barplot(height =c(avg_leaf_expr[genes], avg_root_expr[genes]),
+        names.arg = c(genes,genes ),
+        col=c(rep('tomato',3), rep('skyblue',3)),
+        las=2,
+        cex.names = 0.5,
+        ylim=c(0,max(c(avg_leaf_expr[genes], avg_root_expr[genes]))+20 )
+        ) 
+arrows(
+  x0=xy,
+  y0=c(avg_leaf_expr[genes], avg_root_expr[genes]) - c(sd_leaf_expr[genes], sd_root_expr[genes]),
+  x1=xy,
+  y1=c(avg_leaf_expr[genes], avg_root_expr[genes]) + c(sd_leaf_expr[genes], sd_root_expr[genes]),
+  code=3,
+  angle = 90,
+  length = 0.05,
+  col='blue'
+)
+
+# i. Create a `heatmap` from `expr_2`.
+heatmap( as.matrix(expr_2),
+         col=rev(heat.colors(50)), 
+         scale = "column"
+         )
+
+```
+
+
+## 4. apply()
+pokemon_data.csv: This data set contains information on all 801 Pokemons from all Seven Generations of Pokemon.
+
+a. Import 'pokemon_data.csv' data in to dataframe named `poke`
+b. Use `apply()` to calculate the total Score (defense+hp+attack+speed) for each creature. Assign it to a new column `total_score`.
+c. Report the number of legendary pokemons.
+d. Create a `list` named `totScore_per_gen`. Use `for` loop to loop over 1..7 generations. 
+  - in each loop you need to update `totScore_per_gen` with a names vector "gen_X", where X is generation number. and store the total scores of all creatures from that generation. e.g in the first (1th) loop, create a named vector in `totScore_per_gen[["gen_1"]] <- tot_scores_from_gen1`. Use `paste`, to concatenate variables. 
+e. Use this `totScore_per_gen` with scores from 7 generations to create a boxplot. Use different colors for each box. 
+f. Use  `lapply()` on `totScore_per_gen` to calculate mean per generation and SD per generation. Store these values into two vectors `mean_per_gen` and `SD_per_gen`
+g. Export a table with three column `Generations`,`Mean of Total Scores` and `SD of Total Scores`. 
+
+```{r}
+# a. Import 'pokemon_data.csv' data in to dataframe named `poke`
+poke <- read.csv('Data/pokemon_data.csv')
+
+# b. Use `apply()` to calculate the total Score (defense+hp+attack+speed) for each creature. Assign it to a new column `total_score`.
+poke$total_score <- apply(poke[, c('defense', 'hp', 'attack', 'speed')], 1, sum)
+
+# c. Report the number of legendary pokemons.
+nrow(poke[poke$Is.legendary==1,])
+
+# d. Create a `list` named `totScore_per_gen`. Use `for` loop to loop over 1..7 generations. 
+#####   - in each loop you need to update `totScore_per_gen` with a names vector "gen_X", where X is generation number. and store the total scores of all creatures from that generation. e.g in the first (1th) loop, create a named vector in `totScore_per_gen[["gen_1"]] <- tot_scores_from_gen1`. Use `paste`, to concatenate variables. 
+
+totScore_per_gen <- list()
+for (gen in 1:7){
+  totScore_per_gen[[paste('gen',gen,sep='_') ]] <- 
+    poke[poke$generation==gen, 'total_score' ]
+  
+}
+
+# e. Use this `totScore_per_gen` with scores from 7 generations to create a boxplot. Use different colors for each box. 
+boxplot(totScore_per_gen, 
+        col=1:7,
+        las=2
+        )
+
+# f. Use  `lapply()` on `totScore_per_gen` to calculate mean per generation and SD per generation. Store these values into two vectors `mean_per_gen` and `SD_per_gen`
+mean_per_gen <- lapply(totScore_per_gen, mean)
+SD_per_gen <- lapply(totScore_per_gen, sd)
+
+# g. Export a table with three column `Generations`,`Mean of Total Scores` and `SD of Total Scores`. 
+df <- data.frame(
+  Generations <- 1:7,
+  Mean_total_score <- as.vector(mean_per_gen),
+  SD_total_score <- as.vector(SD_per_gen)
+)
+write.csv(df, file="Scores_per_gen.csv")
+
+```
+
+
+```{r out.width='100px', echo=F}
+knitr::include_graphics('Figures/nebbio_logo.png')
+```

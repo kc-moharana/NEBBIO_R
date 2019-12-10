@@ -1,0 +1,212 @@
+---
+title: "Assignment:Day 1"
+author: "Kanhu"
+date: "25/11/2019"
+output:
+  pdf_document: default
+---
+
+### Getting help
+- Use the R terminal to find the meaning of the following abbreviations:
+  - ls: 
+  - rm :
+  - sum: 
+  - exp:
+  - prod:
+  - sqrt:
+  - seq:
+
+```{r eval=F}
+# To know about any R function use help("<NAME_OF_FUN>")
+
+
+help('ls')
+## - return a vector of character strings giving the 
+#      names of the objects in the specified environment. 
+
+help('rm') 
+## - can be used to remove objects.
+
+help('sum')
+## - eturns the sum of all the values present in its arguments.
+
+
+help('exp')
+## - computes the exponential function.
+
+help('prod')
+## - eturns the product of all the values present in its arguments.
+
+
+help('sqrt')
+## - computes the (principal) square root
+
+help('seq')
+## - Generate regular sequences of numbers . seq is a standard generic with a default method.
+
+```
+
+  
+### R objects   
+1. Create following data structures using random values 
+  - a numeric vector containing 10 values.
+  - a character vector containing 5 values.
+  - create a matrix of dimension (3 x 2). NB: row x columns
+  - create a dataframe of dimension (3 x 4). At least one column must be a character datatype. 
+  
+```{r eval=T}
+# 1. numeric vector
+x <- c(2,44,621, 44, 22,667,998,87,34,50)
+x
+
+# 2. character vector
+c <- c('a','xx','cdx','cff', 'ss')
+c
+
+# 3. create a matrix (4 x 5) means 4 rows and 5 columns
+mat <- matrix(
+  seq(1,20),    #Took a vector of 20 numbers 1..20, 4*5=20
+  nrow=4,          # R can undesand that we need 5 columns
+  byrow = T       #Fill rowwise
+  )
+mat
+
+# 4. create a dataframe (3 x 4), means 3 rows and 4 columns
+df <- data.frame(
+  col1=c('k','l','m'),
+  col2=c(10, 5, 3),
+  clo3=c(10.1, 5.1, 30),
+  col3=c(NA,5,2)
+)
+df
+
+```
+
+2. 'iris' is a built-in dataset available in R. 
+  - report the number of columns and number of rows. 
+  - Use the function **class()** to determine the class of this dataset
+  - Use the function **head()** to get an idea of the data
+  - Determine the datatype of each column.
+
+```{r}
+
+# 1. report the number of columns and number of rows. 
+ncol(iris) # No of columns
+nrow(iris) # No of rows
+
+dim(iris) ## Row  Column 
+
+
+# 2. Use the function **class()** to determine the class of this dataset
+class(iris)
+
+# 3. Use the function **head()** to get an idea of the data
+head(iris)
+
+# 4. Determine the datatype of each column.
+str(iris)
+
+
+
+```
+
+3. Create a list containing 3 vectors.
+```{r}
+name_list <- list(
+  c(1,22,33,12,99,0),
+  c('aa','mna','zz'),
+  c(1.2,2,2,2,2,2,2,2,5,5,5)
+)
+name_list
+```
+
+4. Create a list containing 3 at least objects. At least one must be a dataframe. 
+```{r}
+
+name_list <- list(
+  c(1,22,33,12,99,0),         # vector
+  c('aa','mna','zz'),         #vector
+  data.frame(                 #df
+    a=c(1:2),
+    b=c('x','y')
+  )
+)
+name_list
+
+```
+
+5. Create four vectors and combine them together to create a dataframe. 
+```{r}
+name_student <- c('foo', 'bar', 'baz')
+height <- c(165,178,167)
+scores <- c(89.1,78.99, 10.98)
+weight <- c(67.5,58.4,78.6)
+
+table <- cbind(name_student,height, weight, scores )
+table
+```
+
+
+### Pokemon dataset
+- Read the pokemon_data.csv file into a dataframe named `poke_gen`. 
+   - Report the total number of Pokemon creatures available on Pokedex.
+   - Describe the data type of `Is.legendary` column
+   - Change 'Is.legendary' column data type to categorical data type.
+   - Report the mean weight of all creatures.
+   - export `poke_gen` as CSV file named 'poke_gen_3.csv'.
+   
+```{r}
+## Set your working director where you have stored your 'Data' folder
+# setwd('C:\\Users\\kcmei\\Desktop\\NEBBIO_R')
+
+
+## Read the pokemon_data.csv file into a dataframe named `poke_gen`. 
+poke_gen <- read.csv('Data/pokemon_data.csv')
+
+
+## Report the total number of Pokemon creatures available on Pokedex.
+### reprt the number of rows
+nrow(poke_gen)
+
+## Describe the data type of `Is.legendary` column
+class(poke_gen$Is.legendary)
+
+## Change 'Is.legendary' column data type to categorical data type.
+poke_gen$Is.legendary <- as.factor(poke_gen$Is.legendary)
+
+## Report the mean weight of all creatures.
+mean(poke_gen$weight_kg)  # Will return NA, since this column contains NAs
+
+mean( na.omit(poke_gen$weight_kg)) ##na.omit() is used to remoe NAs
+
+
+## export `poke_gen` as CSV file named 'poke_gen_3.csv'.
+write.csv(poke_gen, file='poke_gen_3.csv')
+```
+   
+   
+### Workspace 
+1. Save all the objects in the current session to one file 'Day1.RData'.
+ `Session -> Save Worksapce as.`  
+2. Delete all objects created. 
+```{r}
+# Use panel-3 to clean the objects 
+```
+
+3. Load the previously saved workspace Day1.RData. list all objects. 
+`Session -> Load Worksapce`
+
+
+### External library packages
+- install a package called 'gtools'.
+  - Download the user manual as PDF 
+  
+  
+```{r eval=F}
+install.package('gtools')
+```
+
+
+```{r out.width='100px', echo=F}
+knitr::include_graphics('Figures/nebbio_logo.png')
+```
